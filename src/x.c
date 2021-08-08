@@ -537,6 +537,9 @@ void x_draw_decoration(Con *con) {
 
     /* 2: draw the client.background, but only for the parts around the window_rect */
     if (con->window != NULL) {
+        /* Clear visible windows before beginning to draw */
+        draw_util_clear_surface(&(con->frame_buffer), (color_t){.red = 0.0, .green = 0.0, .blue = 0.0});
+
         /* top area */
         draw_util_rectangle(&(con->frame_buffer), config.client.background,
                             0, 0, r->width, w->y);
@@ -609,11 +612,36 @@ void x_draw_decoration(Con *con) {
     /* 5: draw title border */
     x_draw_title_border(con, p);
 
-    /* 6: draw the title */
+    /* 6: draw the icon and title */
     int text_offset_y = (con->deco_rect.height - config.font.height) / 2;
+    int text_offset_x = 0;
+
+    struct Window *win = con->window;
 
     const int title_padding = logical_px(2);
     const int deco_width = (int)con->deco_rect.width;
+
+    /* Draw the icon */
+    if (con->window_icon_padding > -1 && win && win->icon) {
+        /* icon_padding is applied horizontally only,
+         * the icon will always use all available vertical space. */
+        const int icon_padding = logical_px(1 + con->window_icon_padding);
+
+        const uint16_t icon_size = con->deco_rect.height - 2 * logical_px(1);
+
+        const int icon_offset_y = logical_px(1);
+
+        text_offset_x += icon_size + 2 * icon_padding;
+
+        draw_util_image(
+            win->icon,
+            &(parent->frame_buffer),
+            con->deco_rect.x + icon_padding,
+            con->deco_rect.y + icon_offset_y,
+            icon_size,
+            icon_size);
+    }
+
     int mark_width = 0;
     if (config.show_marks && !TAILQ_EMPTY(&(con->marks_head))) {
         char *formatted_mark = sstrdup("");
@@ -652,7 +680,6 @@ void x_draw_decoration(Con *con) {
     }
 
     i3String *title = NULL;
-    struct Window *win = con->window;
     if (win == NULL) {
         if (con->title_format == NULL) {
             char *_title;
@@ -696,9 +723,9 @@ void x_draw_decoration(Con *con) {
 
     draw_util_text(title, &(parent->frame_buffer),
                    p->color->text, p->color->background,
-                   con->deco_rect.x + title_offset_x,
+                   con->deco_rect.x + text_offset_x + title_offset_x,
                    con->deco_rect.y + text_offset_y,
-                   deco_width - mark_width - 2 * title_padding);
+                   deco_width - text_offset_x - mark_width - 2 * title_padding);
 
     if (win == NULL || con->title_format != NULL) {
         I3STRING_FREE(title);
@@ -1418,6 +1445,8 @@ void x_set_i3_atoms(void) {
     xcb_change_property(conn, XCB_PROP_MODE_REPLACE, root, A_I3_PID, XCB_ATOM_CARDINAL, 32, 1, &pid);
     xcb_change_property(conn, XCB_PROP_MODE_REPLACE, root, A_I3_CONFIG_PATH, A_UTF8_STRING, 8,
                         strlen(current_configpath), current_configpath);
+    xcb_change_property(conn, XCB_PROP_MODE_REPLACE, root, A_I3_LOG_STREAM_SOCKET_PATH, A_UTF8_STRING, 8,
+                        strlen(current_log_stream_socket_path), current_log_stream_socket_path);
     update_shmlog_atom();
 }
 

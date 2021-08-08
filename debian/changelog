@@ -1,16 +1,14 @@
-i3-gaps-wm (4.19-1ubuntu1) bionic; urgency=medium
+i3-wm (4.19.2-1) unstable; urgency=medium
 
-  [ Ken Gilmer ]
-  * Update debian packaging for naming of package from i3 to i3-gaps.  Add binary package for Xsession.
+  * New upstream release.
 
- -- Regolith Linux <regolith.linux@gmail.com>  Thu, 26 Nov 2020 14:17:27 -0800
+ -- Michael Stapelberg <stapelberg@debian.org>  Sat, 27 Feb 2021 10:32:17 +0100
 
 i3-wm (4.19-1) unstable; urgency=medium
 
-  [ Michael Stapelberg ]
   * New upstream release.
 
- -- Regolith Linux <regolith.linux@gmail.com>  Thu, 26 Nov 2020 13:59:53 -0800
+ -- Michael Stapelberg <stapelberg@debian.org>  Mon, 19 Oct 2020 22:48:30 +0200
 
 i3-wm (4.18.3-1) unstable; urgency=medium
 
